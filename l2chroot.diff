@@ -1,0 +1,32 @@
+--- l2chroot.txt	2010-04-06 08:59:34.000000000 +0000
++++ /sbin/l2chroot	2020-01-30 15:20:58.924978520 +0000
+@@ -11,7 +11,9 @@
+ # http://www.cyberciti.biz/tips/howto-setup-lighttpd-php-mysql-chrooted-jail.html
+ # -------------------------------------------------------------------------------
+ # Set CHROOT directory name
+-BASE="/webroot"
++BASE="/ngs"
++
++set -x
+ 
+ if [ $# -eq 0 ]; then
+   echo "Syntax : $0 /path/to/executable"
+@@ -28,7 +30,7 @@
+ for i in $FILES
+ do
+   d="$(dirname $i)"
+-  [ ! -d $BASE$d ] && mkdir -p $BASE$d || :
++  [ ! -d $BASE$d ] && mkdir -p $BASE$d || :  
+   /bin/cp $i $BASE$d
+ done
+ 
+@@ -40,7 +42,8 @@
+ 
+ if [ ! -f $BASE$sldl ];
+ then
+-  echo "Copying $sldl $BASE$sldlsubdir..."
++    echo "Copying $sldl $BASE$sldlsubdir..."
++    [ ! -d $BASE$sldlsubdir ] && mkdir -p $BASE$sldlsubdir || :
+   /bin/cp $sldl $BASE$sldlsubdir
+ else
+   :

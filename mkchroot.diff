@@ -1,0 +1,20 @@
+1c1
+< #!/bin/sh
+---
+> 3#!/bin/sh
+99,101c99,101
+< sftp_server_path="/usr/libexec/openssh/sftp-server"
+< rssh_path="/usr/bin/rssh"
+< chroot_helper_path="/usr/libexec/rssh_chroot_helper"
+---
+> sftp_server_path="/usr/lib/openssh/sftp-server"
+> rssh_path="/usr/local/bin/rssh"
+> chroot_helper_path="/usr/local/libexec/rssh_chroot_helper"
+103c103
+< for jail_path in `dirname "$jail_dir$scp_path"` `dirname "$jail_dir$sftp_server_path"` `dirname "$jail_dir$chroot_helper_path"`; do
+---
+> for jail_path in `dirname "$jail_dir$scp_path"` `dirname "$jail_dir$sftp_server_path"` `dirname "$jail_dir$chroot_helper_path"` `dirname $jail_dir$rssh_path`; do
+140c140
+< tar -cf - /lib/libnss_files* /lib/libnss1_files* | tar -C "$jail_dir" -xvf - |sed 's/^/\t/'
+---
+> tar -cf - /lib/x86_64-linux-gnu/libnss_files* | tar -C "$jail_dir" -xvf - |sed 's/^/\t/'

@@ -1,0 +1,225 @@
+The following steps describe (roughly) how to set up rssh on Ubuntu 18.04. I created these notes for my own use, so they may not be perfect.
+
+Create a system user ngs with no password.
+
+       sudo useradd --system --no-create-home ngs
+
+Change the password for the ngs user to something strong (temporarily).
+
+       sudo passwd ngs
+
+Download rssh from http://www.pizzashack.org/rssh/
+
+       wget http://prdownloads.sourceforge.net/rssh/rssh-2.3.4.tar.gz?download
+
+Move
+
+       mv rssh-2.3.4.tar.gz?download rssh.tar.gz
+
+Extract
+
+       tar xzvf rssh.tar.gz
+
+Change to rssh-* dir
+
+       cd rssh-2.3.4
+
+Configure
+
+       ./configure
+
+Compile
+
+       make
+
+Install
+
+       sudo make install
+
+Apply the patch to mkchroot.sh
+
+      patch mkchroot.sh ../rssh-notes/mkchroot.diff
+
+Use mkchroot.sh to create the initial jail.
+
+      sudo ./makechroot.sh /ngs
+
+Download the l2chroot script.
+
+      wget https://www.cyberciti.biz/files/lighttpd/l2chroot.txt
+
+Move the l2chroot script
+
+     mv l2chroot.txt l2chroot
+
+Apply the l2chroot script patch.
+
+     patch l2chroot rssh-notes/l2chroot.diff
+
+Make the l2chroot script executable.
+
+     chmod u+x l2chroot
+
+If your chroot jail will not be at /ngs, make sure to change it in the script!
+
+Run the l2chroot script for our programs.
+
+     sudo ./l2chroot "$(which rssh)"
+     sudo ./l2chroot "$(which scp)"
+     sudo ./l2chroot /usr/local/libexec/rssh_chroot_helper
+     sudo ./l2chroot /usr/lib/openssh/sftp-server
+
+(Optional?) Add some programs to the jail to make testing less painful.
+
+     sudo cp /bin/bash /ngs/bin
+     sudo cp /bin/sh /ngs/bin
+
+(Optional?) Run l2chroot for the new programs.
+
+     sudo ./l2chroot /bin/bash
+     sudo ./l2chroot /bin/sh
+
+Add some more files to the jail.
+
+     sudo cp -r /etc/ld.so.conf.d /ngs/etc
+     sudo cp /etc/nsswitch.conf /ngs/etc
+     sudo cp /etc/group /ngs/etc
+     sudo cp /etc/hosts /ngs/etc
+     sudo cp /etc/resolv.conf /ngs/etc
+
+Add sftp to the jail.
+
+    sudo cp /usr/bin/sftp /ngs/usr/bin/sftp
+
+Run l2chroot for sftp.
+
+    sudo l2chroot /usr/bin/sftp
+
+Create the home directory for ngs
+
+    sudo mkdir /ngs/home/
+    sudo mkdir /ngs/home/ngs
+
+Change ownership for ngs home directory
+
+    sudo chown ngs /ngs/home/ngs
+
+Change permissions for ngs home directory
+
+   sudo chmod u-w /ngs/home/ngs
+
+Add mknod to the jail
+
+   sudo cp /bin/mknod /ngs/bin
+
+Chroot into the jail
+
+   sudo chroot /ngs
+
+Create /dev/null
+
+   mknod /dev/null c 1 3
+
+Exit jail
+
+   exit
+
+Change permissions on jail dev/null
+
+   sudo chmod u+rw /ngs/dev/null
+
+Modify the /usr/local/etc/rssh.conf to
+
+   allowscp
+   chrootpath = /ngs/
+      
+Change the shell of the ngs user.
+
+   sudo chsh -s "$(which rssh)"
+
+Set the home directory of the ngs user.
+
+   sudo usermod -d /ngs/home/ngs ngs
+
+Add the passwd file to the jail
+
+    sudo tail -n 1 /etc/passwd > /ngs/etc/passwd
+
+Edit the /ngs/etc/passwd file to have home directory
+
+    /home/ngs
+
+
+
+The directory structure of the jail should look something like this:
+
+.
+├── bin
+│   ├── bash
+│   ├── mknod
+│   ├── rssh -> /ngs/usr/local/bin/rssh
+│   ├── scp -> /ngs/usr/bin/scp
+│   ├── sftp -> /ngs/usr/bin/sftp
+│   └── sh
+├── dev
+│   └── null
+├── etc
+│   ├── #passwd#
+│   ├── group
+│   ├── hosts
+│   ├── ld.so.cache
+│   ├── ld.so.cache.d
+│   ├── ld.so.conf
+│   ├── ld.so.conf.d
+│   │   ├── fakeroot-x86_64-linux-gnu.conf
+│   │   ├── libc.conf
+│   │   └── x86_64-linux-gnu.conf
+│   ├── nsswitch.conf
+│   ├── passwd
+│   ├── passwd~
+│   └── resolv.conf
+├── home
+│   └── ngs
+│       └── Desktop
+│           └── hw1.txt
+├── lib
+│   └── x86_64-linux-gnu
+│       ├── libbsd.so.0
+│       ├── libc.so.6
+│       ├── libdl.so.2
+│       ├── libnss_compat-2.27.so
+│       ├── libnss_compat.so.2
+│       ├── libnss_files-2.27.so
+│       ├── libnss_files.so.2 -> libnss_files-2.27.so
+│       ├── libpcre.so.3
+│       ├── libpthread.so.0
+│       ├── librt.so.1
+│       ├── libselinux.so.1
+│       └── libtinfo.so.5
+├── lib64
+│   └── ld-linux-x86-64.so.2
+└── usr
+    ├── bin
+    │   ├── scp
+    │   └── sftp
+    ├── lib
+    │   ├── openssh
+    │   │   └── sftp-server
+    │   └── x86_64-linux-gnu
+    │       └── libedit.so.2
+    └── local
+        ├── bin
+        │   └── rssh
+        ├── lib
+        │   └── rssh_chroot_helper -> /ngs/usr/local/libexec/rssh_chroot_helper
+        └── libexec
+            └── rssh_chroot_helper
+
+
+The /etc/passwd file should end like this:
+
+ngs:x:113:65534::/ngs/home/ngs:/usr/local/bin/rssh
+
+The /ngs/etc/passwd file should end like this:
+
+ngs:x:113:65534::/home/ngs:/usr/local/bin/rssh
