@@ -1,6 +1,8 @@
-The following steps describe (roughly) how to set up rssh on Ubuntu 18.04. I created these notes for my own use, so they may not be perfect.
+The following steps describe (roughly) how to set up rssh on Ubuntu 18.04, 20.04, or 22.04.
+The instructions assume you want a user called "ngs" that can user scp but not ssh.
+The user is chrooted to a jail at /ngs.
 
-Create a system user ngs with no password.
+Create a system user ngs (or whatever name you like) with no password.
 
        sudo useradd --system --no-create-home ngs
 
@@ -42,25 +44,19 @@ Apply the patch to mkchroot.sh
 
 Use mkchroot.sh to create the initial jail.
 
-      sudo ./makechroot.sh /ngs
+      sudo ./mkchroot.sh /ngs
 
-Download the l2chroot script.
+cd to the rssh-notes directory
 
-      wget https://www.cyberciti.biz/files/lighttpd/l2chroot.txt
+      cd ../rssh-notes
 
-Move the l2chroot script
+If your chroot jail will not be at /ngs, make sure to change it in the l2chroot script!
 
-     mv l2chroot.txt l2chroot
+Make bin directories
 
-Apply the l2chroot script patch.
-
-     patch l2chroot rssh-notes/l2chroot.diff
-
-Make the l2chroot script executable.
-
-     chmod u+x l2chroot
-
-If your chroot jail will not be at /ngs, make sure to change it in the script!
+     sudo mkdir /ngs/bin
+     sudo mkdir /ngs/usr
+     sudo mkdir /ngs/usr/bin
 
 Run the l2chroot script for our programs.
 
@@ -93,7 +89,7 @@ Add sftp to the jail.
 
 Run l2chroot for sftp.
 
-    sudo l2chroot /usr/bin/sftp
+    sudo ./l2chroot /usr/bin/sftp
 
 Create the home directory for ngs
 
@@ -104,13 +100,17 @@ Change ownership for ngs home directory
 
     sudo chown ngs /ngs/home/ngs
 
-Change permissions for ngs home directory
+Change permissions for ngs home directory (if desired)
 
    sudo chmod u-w /ngs/home/ngs
 
 Add mknod to the jail
 
    sudo cp /bin/mknod /ngs/bin
+
+l2chroot it
+
+   sudo ./l2chroot /bin/mknod
 
 Chroot into the jail
 
@@ -126,7 +126,7 @@ Exit jail
 
 Change permissions on jail dev/null
 
-   sudo chmod u+rw /ngs/dev/null
+   sudo chmod a+rw /ngs/dev/null
 
 Modify the /usr/local/etc/rssh.conf to
 
@@ -135,7 +135,7 @@ Modify the /usr/local/etc/rssh.conf to
       
 Change the shell of the ngs user.
 
-   sudo chsh -s "$(which rssh)"
+   sudo chsh -s "$(which rssh)" ngs
 
 Set the home directory of the ngs user.
 
@@ -143,7 +143,7 @@ Set the home directory of the ngs user.
 
 Add the passwd file to the jail
 
-    sudo tail -n 1 /etc/passwd > /ngs/etc/passwd
+    sudo tail -n 1 /etc/passwd | sudo tee /ngs/etc/passwd
 
 Edit the /ngs/etc/passwd file to have home directory
 

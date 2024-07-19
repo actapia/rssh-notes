@@ -11,7 +11,9 @@
 # http://www.cyberciti.biz/tips/howto-setup-lighttpd-php-mysql-chrooted-jail.html
 # -------------------------------------------------------------------------------
 # Set CHROOT directory name
-BASE="/ngs"
+if ! [[ -v BASE ]]; then
+    BASE="/ngs"
+fi
 
 set -x
 
