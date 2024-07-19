@@ -91,9 +91,9 @@ cd rssh-2.3.4
 ./configure
 make
 sudo make install
-patch mkchroot.sh ../rssh-notes/mkchroot.diff
+patch mkchroot.sh ../mkchroot.diff
 sudo ./mkchroot.sh "$JAIL"
-cd ../rssh-notes
+cd ..
 export BASE="$JAIL"
 sudo mkdir  "$JAIL/bin"
 sudo mkdir -p "$JAIL/usr/bin"
