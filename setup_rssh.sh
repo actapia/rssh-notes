@@ -122,10 +122,10 @@ sudo cp /bin/mknod "$JAIL/bin"
 sudo ./l2chroot /bin/mknod
 sudo chroot "$JAIL" mkdir /dev/null c 1 3
 sudo chmod a+rw "$JAIL/dev/null"
-cat <<<EOF
+cat > /usr/local/etc/rssh.conf <<EOF
 allowscp
 chrootpath = "$JAIL"
-EOF > /usr/local/etc/rssh.conf
+EOF
 sudo chsh -s "$(which rssh)" "$USERNAME"
 sudo usermod -d "$JAIL/home/$USERNAME" "$USERNAME"
 sudo getent passwd "$USERNAME" | sudo tee "$JAIL/etc/passwd" > /dev/null
