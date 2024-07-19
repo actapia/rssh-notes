@@ -124,7 +124,7 @@ sudo chroot "$JAIL" mkdir /dev/null c 1 3
 sudo chmod a+rw "$JAIL/dev/null"
 cat > /usr/local/etc/rssh.conf <<EOF
 allowscp
-chrootpath = "$JAIL"
+chrootpath = $JAIL
 EOF
 sudo chsh -s "$(which rssh)" "$USERNAME"
 sudo usermod -d "$JAIL/home/$USERNAME" "$USERNAME"
