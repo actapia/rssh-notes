@@ -6,166 +6,233 @@ prohibited by rssh. This repository conatins a patch (provided by
 might fix the discovered vulnerability, but this has not been tested
 carefully. If you are using `rssh` for security, please look elsewhere!**
 
-The following steps describe (roughly) how to set up rssh on Ubuntu 18.04,
+The following steps describe (roughly) how to set up `rssh` on Ubuntu 18.04,
 20.04, or 22.04.  The instructions assume you want a user called "ngs" that can
-user scp but not ssh.  The user is chrooted to a jail at /ngs.
+user scp but not ssh.  The user is chrooted to a jail at `/ngs`.
 
-Create a system user ngs (or whatever name you like) with no password.
+Create a system user `ngs` (or whatever name you like) with no password.
 
-       sudo useradd --system --no-create-home ngs
+```bash
+sudo useradd --system --no-create-home ngs
+```
 
-Change the password for the ngs user to something strong (temporarily).
+Change the password for the `ngs` user to something strong (temporarily).
 
-       sudo passwd ngs
+```bash
+sudo passwd ngs
+```
 
-Download rssh from http://www.pizzashack.org/rssh/
+Download `rssh` from http://www.pizzashack.org/rssh/
 
-       wget http://prdownloads.sourceforge.net/rssh/rssh-2.3.4.tar.gz?download
+```bash
+wget http://prdownloads.sourceforge.net/rssh/rssh-2.3.4.tar.gz?download
+```
 
 Move
 
-       mv rssh-2.3.4.tar.gz?download rssh.tar.gz
+```bash
+mv rssh-2.3.4.tar.gz?download rssh.tar.gz
+```
 
 Extract
 
-       tar xzvf rssh.tar.gz
+```bash
+tar xzvf rssh.tar.gz
+```
 
-Change to rssh-* dir
+Change to `rssh-*` dir
 
-       cd rssh-2.3.4
+```bash
+cd rssh-2.3.4
+```
 
 Apply the patch (from Russ Allbery).
 
-       patch -s -p1 < ../rssh-notes/rssh_patch.diff
+```bash
+patch -s -p1 < ../rssh-notes/rssh_patch.diff
+```
 
 Configure
 
-       ./configure
+```bash
+./configure
+```
 
 Compile
 
-       make
+```bash
+make
+```
 
 Install
 
-       sudo make install
+```bash
+sudo make install
+```
 
-Apply the patch to mkchroot.sh
+Apply the patch to `mkchroot.sh`
 
-      patch mkchroot.sh ../rssh-notes/mkchroot.diff
+```bash
+patch mkchroot.sh ../rssh-notes/mkchroot.diff
+```
 
-Use mkchroot.sh to create the initial jail.
+Use `mkchroot.sh` to create the initial jail.
 
-      sudo ./mkchroot.sh /ngs
+```bash
+sudo ./mkchroot.sh /ngs
+```
 
-cd to the rssh-notes directory
+`cd` to the `rssh-notes` directory
 
-      cd ../rssh-notes
+```bash
+cd ../rssh-notes
+```
 
-If your chroot jail will not be at /ngs, make sure to change it in the l2chroot
-script!
+If your chroot jail will not be at `/ngs`, make sure to change it in the
+l2chroot script!
 
-Make bin directories
+Make `bin` directories
 
-     sudo mkdir /ngs/bin
-     sudo mkdir /ngs/usr
-     sudo mkdir /ngs/usr/bin
+```bash
+sudo mkdir /ngs/bin
+sudo mkdir /ngs/usr
+sudo mkdir /ngs/usr/bin
+```
 
-Run the l2chroot script for our programs.
+Run the `l2chroot` script for our programs.
 
-     sudo ./l2chroot "$(which rssh)"
-     sudo ./l2chroot "$(which scp)"
-     sudo ./l2chroot /usr/local/libexec/rssh_chroot_helper
-     sudo ./l2chroot /usr/lib/openssh/sftp-server
+```bash
+sudo ./l2chroot "$(which rssh)"
+sudo ./l2chroot "$(which scp)"
+sudo ./l2chroot /usr/local/libexec/rssh_chroot_helper
+sudo ./l2chroot /usr/lib/openssh/sftp-server
+```
 
 (Optional?) Add some programs to the jail to make testing less painful.
 
-     sudo cp /bin/bash /ngs/bin
-     sudo cp /bin/sh /ngs/bin
+```bash
+sudo cp /bin/bash /ngs/bin
+sudo cp /bin/sh /ngs/bin
+```
 
-(Optional?) Run l2chroot for the new programs.
+(Optional?) Run `l2chroot` for the new programs.
 
-     sudo ./l2chroot /bin/bash
-     sudo ./l2chroot /bin/sh
+```bash
+sudo ./l2chroot /bin/bash
+sudo ./l2chroot /bin/sh
+```
 
 Add some more files to the jail.
 
-     sudo cp -r /etc/ld.so.conf.d /ngs/etc
-     sudo cp /etc/nsswitch.conf /ngs/etc
-     sudo cp /etc/group /ngs/etc
-     sudo cp /etc/hosts /ngs/etc
-     sudo cp /etc/resolv.conf /ngs/etc
+```bash
+sudo cp -r /etc/ld.so.conf.d /ngs/etc
+sudo cp /etc/nsswitch.conf /ngs/etc
+sudo cp /etc/group /ngs/etc
+sudo cp /etc/hosts /ngs/etc
+sudo cp /etc/resolv.conf /ngs/etc
+```
 
-Add sftp to the jail.
+Add `sftp` to the jail.
 
-    sudo cp /usr/bin/sftp /ngs/usr/bin/sftp
+```bash
+sudo cp /usr/bin/sftp /ngs/usr/bin/sftp
+```
 
-Run l2chroot for sftp.
+Run `l2chroot` for `sftp`.
 
-    sudo ./l2chroot /usr/bin/sftp
+```bash
+sudo ./l2chroot /usr/bin/sftp
+```
 
-Create the home directory for ngs
+Create the home directory for `ngs`
 
-    sudo mkdir /ngs/home/
-    sudo mkdir /ngs/home/ngs
+```bash
+sudo mkdir /ngs/home/
+sudo mkdir /ngs/home/ngs
+```
 
-Change ownership for ngs home directory
+Change ownership for `ngs` home directory
 
-    sudo chown ngs /ngs/home/ngs
+```bash
+sudo chown ngs /ngs/home/ngs
+```
 
-Change permissions for ngs home directory (if desired)
+Change permissions for `ngs` home directory (if desired)
 
-   sudo chmod u-w /ngs/home/ngs
+```bash
+sudo chmod u-w /ngs/home/ngs
+```
 
-Add mknod to the jail
+Add `mknod` to the jail
 
-   sudo cp /bin/mknod /ngs/bin
+```bash
+sudo cp /bin/mknod /ngs/bin
+```
 
-l2chroot it
+`l2chroot` it
 
-   sudo ./l2chroot /bin/mknod
+```bash
+sudo ./l2chroot /bin/mknod
+```
 
 Chroot into the jail
 
-   sudo chroot /ngs
+```bash
+sudo chroot /ngs
+```
 
-Create /dev/null
+Create `/dev/null`
 
-   mknod /dev/null c 1 3
+```bash
+mknod /dev/null c 1 3
+```
 
 Exit jail
 
-   exit
+```bash
+exit
+```
 
-Change permissions on jail dev/null
+Change permissions on jail `/dev/null`
 
-   sudo chmod a+rw /ngs/dev/null
+```bash
+sudo chmod a+rw /ngs/dev/null
+```
 
-Modify the /usr/local/etc/rssh.conf to
+Modify the `/usr/local/etc/rssh.conf` to
 
-   allowscp
-   chrootpath = /ngs/
+```bash
+allowscp
+chrootpath = /ngs/
+```
       
-Change the shell of the ngs user.
+Change the shell of the `ngs` user.
 
-   sudo chsh -s "$(which rssh)" ngs
+```bash
+sudo chsh -s "$(which rssh)" ngs
+```
 
-Set the home directory of the ngs user.
+Set the home directory of the `ngs` user.
 
-   sudo usermod -d /ngs/home/ngs ngs
+```bash
+sudo usermod -d /ngs/home/ngs ngs
+```
 
-Add the passwd file to the jail
+Add the `passwd` file to the jail
 
-    sudo tail -n 1 /etc/passwd | sudo tee /ngs/etc/passwd
+```bash
+sudo tail -n 1 /etc/passwd | sudo tee /ngs/etc/passwd
+```
 
-Edit the /ngs/etc/passwd file to have home directory
+Edit the `/ngs/etc/passwd` file to have home directory
 
-    /home/ngs
-
-
+```text
+/home/ngs
+```
 
 The directory structure of the jail should look something like this:
 
+```text
 .
 ├── bin
 │   ├── bash
@@ -227,12 +294,16 @@ The directory structure of the jail should look something like this:
         │   └── rssh_chroot_helper -> /ngs/usr/local/libexec/rssh_chroot_helper
         └── libexec
             └── rssh_chroot_helper
+```
 
+The `/etc/passwd` file should end like this:
 
-The /etc/passwd file should end like this:
-
+```text
 ngs:x:113:65534::/ngs/home/ngs:/usr/local/bin/rssh
+```
 
-The /ngs/etc/passwd file should end like this:
+The `/ngs/etc/passwd` file should end like this:
 
+```text
 ngs:x:113:65534::/home/ngs:/usr/local/bin/rssh
+```
