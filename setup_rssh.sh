@@ -3,15 +3,18 @@ readonly username_flag="--username"
 readonly jail_flag="--jail"
 readonly help_flag="--help"
 readonly readonly_flag="--read-only"
+readonly clean_flag="--clean"
 declare -A ARG_SHORT
 ARG_SHORT["$username_flag"]="-u"
 ARG_SHORT["$jail_flag"]="-j"
 ARG_SHORT["$help_flag"]="-h"
 ARG_SHORT["$readonly_flag"]="-r"
+ARG_SHORT["$clean_flag"]="-c"
 declare -A ARG_HELP
 ARG_HELP["$username_flag"]="Username of user that will be acessible by rssh."
 ARG_HELP["$jail_flag"]="Path to chroot jail for rssh."
 ARG_HELP["$readonly_flag"]="Make new user's home directory read-only."
+ARG_HELP["$clean_flag"]="Clean before starting."
 declare -A METAVAR
 for flag in "${!ARG_SHORT[@]}"; do
     mv="${flag//[^A-Za-z]/}"   
@@ -21,6 +24,7 @@ USERNAME=ngs
 JAIL=/ngs
 do_help=false
 make_readonly=false
+clean=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
 	"$username_flag" | "${ARG_SHORT[$username_flag]}")
@@ -37,6 +41,9 @@ while [ "$#" -gt 0 ]; do
 	    ;;
 	"$readonly_flag" | "${ARG_SHORT[$readonly_flag]}")
 	    make_readonly=true
+	    ;;
+	"$clean_flag" | "${ARG_SHORT[$clean_flag]}")
+	    clean=true
 	    ;;
     esac
     shift
@@ -81,6 +88,13 @@ if [ "$do_help" = true ]; then
     done
     exit 0
 fi
+if [ "$clean" = true ]; then
+    sudo deluser --remove-home "$USERNAME"
+    rm "rssh.tar.gz"
+    rm -rf "rssh-2.3.4"
+fi
+set -x
+set -e
 sudo useradd --system --no-create-home "$USERNAME"
 >&2 echo "Set a password for $USERNAME:"
 sudo passwd "$USERNAME"
@@ -115,15 +129,15 @@ sudo cp /usr/bin/sftp "$JAIL/usr/bin/sftp"
 sudo ./l2chroot /usr/bin/sftp
 sudo mkdir -p "$JAIL/home/$USERNAME"
 sudo chown "$USERNAME" "$JAIL/home/$USERNAME"
-sudo chmod u-w 
+#sudo chmod u-w "$JAIL/home/$USERNAME"
 if [ "$make_readonly" = true ]; then
     sudo chmod u-w "$JAIL/home/$USERNAME"
 fi
 sudo cp /bin/mknod "$JAIL/bin"
 sudo ./l2chroot /bin/mknod
-sudo chroot "$JAIL" mkdir /dev/null c 1 3
+sudo chroot "$JAIL" mknod /dev/null c 1 3
 sudo chmod a+rw "$JAIL/dev/null"
-cat > /usr/local/etc/rssh.conf <<EOF
+sudo tee /usr/local/etc/rssh.conf <<EOF
 allowscp
 chrootpath = $JAIL
 EOF
