@@ -88,6 +88,7 @@ wget "http://prdownloads.sourceforge.net/rssh/rssh-2.3.4.tar.gz?download"
 mv rssh-2.3.4.tar.gz?download rssh.tar.gz
 tar xzvf rssh.tar.gz
 cd rssh-2.3.4
+patch -s -p1 < ../rssh_patch.diff
 ./configure
 make
 sudo make install

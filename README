@@ -1,6 +1,14 @@
-The following steps describe (roughly) how to set up rssh on Ubuntu 18.04, 20.04, or 22.04.
-The instructions assume you want a user called "ngs" that can user scp but not ssh.
-The user is chrooted to a jail at /ngs.
+**Warning: rssh is currently unmaintained and is known to have a [security
+vulernability](https://www.holidayhackchallenge.com/2018/winners/esnet_hhc18/)
+that allows an attacker to access a shell on the SSH server even when login is
+prohibited by rssh. This repository conatins a patch (provided by
+[Russ Allbery](https://sourceforge.net/p/rssh/mailman/message/36530715/)) that
+might fix the discovered vulnerability, but this has not been tested
+carefully. If you are using `rssh` for security, please look elsewhere!**
+
+The following steps describe (roughly) how to set up rssh on Ubuntu 18.04,
+20.04, or 22.04.  The instructions assume you want a user called "ngs" that can
+user scp but not ssh.  The user is chrooted to a jail at /ngs.
 
 Create a system user ngs (or whatever name you like) with no password.
 
@@ -26,6 +34,10 @@ Change to rssh-* dir
 
        cd rssh-2.3.4
 
+Apply the patch (from Russ Allbery).
+
+       patch -s -p1 < ../rssh-notes/rssh_patch.diff
+
 Configure
 
        ./configure
@@ -50,7 +62,8 @@ cd to the rssh-notes directory
 
       cd ../rssh-notes
 
-If your chroot jail will not be at /ngs, make sure to change it in the l2chroot script!
+If your chroot jail will not be at /ngs, make sure to change it in the l2chroot
+script!
 
 Make bin directories
 
