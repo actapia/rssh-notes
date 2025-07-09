@@ -90,6 +90,7 @@ if [ "$do_help" = true ]; then
 fi
 if [ "$clean" = true ]; then
     sudo deluser --remove-home "$USERNAME"
+    sudo delgroup "$USERNAME"
     rm "rssh.tar.gz"
     rm -rf "rssh-2.3.4"
 fi
