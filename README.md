@@ -1,10 +1,13 @@
-**Warning: rssh is currently unmaintained and is known to have a [security
-vulernability](https://www.holidayhackchallenge.com/2018/winners/esnet_hhc18/)
-that allows an attacker to access a shell on the SSH server even when login is
-prohibited by rssh. This repository conatins a patch (provided by
-[Russ Allbery](https://sourceforge.net/p/rssh/mailman/message/36530715/)) that
-might fix the discovered vulnerability, but this has not been tested
-carefully. If you are using `rssh` for security, please look elsewhere!**
+**Warning: rssh is currently unmaintained and is known to have [security
+vulernabilities](https://nvd.nist.gov/vuln/search#/nvd/home?cpeFilterMode=cpe&cpeName=cpe:2.3:a:pizzashack:rssh:2.3.4:*:*:*:*:*:*:*&resultType=records),
+including [this
+one](https://www.holidayhackchallenge.com/2018/winners/esnet_hhc18/) that allows
+an attacker to access a shell on the SSH server even when login is prohibited by
+rssh. This repository contains a patch (provided by [Russ
+Allbery](https://sourceforge.net/p/rssh/mailman/message/36530715/)) that might
+fix that vulnerability, but even this has not been tested carefully. If you are
+using `rssh` for security, please look elsewhere!** [GNU
+Rush](https://www.gnu.org.ua/software/rush/) might be a better alternative.
 
 The following steps describe (roughly) how to set up `rssh` on Ubuntu 18.04,
 20.04, or 22.04.  The instructions assume you want a user called "ngs" that can
